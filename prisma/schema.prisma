@@ -1,0 +1,70 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Role {
+  id        String    @id
+  name      String    @unique
+  users     User[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("roles")
+}
+
+model User {
+  id          String       @id
+  email       String       @unique
+  username    String
+  role        Role         @relation(fields: [roleId], references: [id])
+  roleId      String       @map("role_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deletedAt   DateTime?    @map("deleted_at")
+  definitions Definition[]
+  reactions   Reaction[]
+
+  @@map("users")
+}
+
+model Definition {
+  id         String     @id
+  word       String
+  definition String
+  example    String
+  reactions  Reaction[]
+  userId     String     @map("user_id")
+  user       User       @relation(fields: [userId], references: [id])
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  approvedAt DateTime?  @map("approved_at")
+  deletedAt  DateTime?  @map("deleted_at")
+
+  @@map("definitions")
+}
+
+enum ReactionType {
+  LIKE
+  DISLIKE
+}
+
+model Reaction {
+  id           String       @id
+  type         ReactionType
+  definitionId String       @map("definition_id")
+  definition   Definition   @relation(fields: [definitionId], references: [id])
+  userId       String       @map("user_id")
+  user         User         @relation(fields: [userId], references: [id])
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  deletedAt    DateTime?    @map("deleted_at")
+
+  @@unique([definitionId, userId])
+  @@map("reactions")
+}
