@@ -8,7 +8,11 @@ import { useFetcher, useLoaderData } from '@remix-run/react';
 import { prisma } from '~/db.server';
 import type { ActionArgs, LoaderArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { ValidatedForm, validationError } from 'remix-validated-form';
+import {
+	useFormContext,
+	ValidatedForm,
+	validationError
+} from 'remix-validated-form';
 import { z } from 'zod';
 import { withZod } from '@remix-validated-form/with-zod';
 import { Prisma, ReactionType } from '@prisma/client';
@@ -17,23 +21,35 @@ import { requireUser, getSession, authenticator } from '~/auth.server';
 import { useOptionalUser } from '~/utils';
 import type { Optional } from '~/utils';
 import { customNanoId } from '~/utils';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { ReactElement } from 'react';
 import superjson from 'superjson';
 import { useModalStore } from '~/root';
+import create from 'zustand';
 
-type ReactionByDefinition = {
+interface InvalidateDefinitionState {
+	id: string | null;
+	setId: (id: string | null) => void;
+}
+
+const useInvalidateDefinition = create<InvalidateDefinitionState>()(set => ({
+	id: null,
+	setId: id => set(state => ({ id }))
+}));
+
+export type ReactionByDefinition = {
 	definition_id?: Reaction['definitionId'];
 	likes: number;
 	dislikes: number;
 };
 
-type CurrentUserReaction = Optional<
+export type CurrentUserReaction = Optional<
 	Pick<Reaction, 'id' | 'type' | 'definitionId'>,
 	'definitionId'
 >;
 
 // TODO: Ambil "Definition" field type dari Prisma.DefinitionGetPayload
-type DefinitionWithReaction = {
+export type DefinitionWithReaction = {
 	id: string;
 	word: string;
 	definition: string;
@@ -230,21 +246,68 @@ export const loader = async ({ request }: LoaderArgs) => {
 	return json(superjson.serialize(loaderData).json);
 };
 
-interface DefinitionCardProps {
-	data: DefinitionWithReaction;
-	onUpdate: () => void;
+interface SubmitButtonProps {
+	children: ReactElement;
+	formId: string;
 }
 
-const DefinitionCard = ({ data }: { data: DefinitionWithReaction }) => {
+const SubmitButton = ({ children, formId }: SubmitButtonProps) => {
+	const formContext = useFormContext(formId);
+	const fetcher = useFetcher();
+	const invalidateDefinition = useInvalidateDefinition();
+
+	const submitForm = () => {
+		if (formContext.isValid) {
+			const formData = formContext.getValues();
+			const id = formData.get('id') as Schema['id'];
+			const type = formData.get('type') as Schema['type'];
+			const subaction = formData.get('subaction') as Schema['subaction'];
+
+			const submittedData: Schema = { id, type, subaction };
+			fetcher.submit(submittedData, {
+				method: 'post',
+				action: '/?index',
+				replace: true
+			});
+
+			invalidateDefinition.setId(id);
+		}
+	};
+
+	return (
+		<button
+			type="button"
+			onClick={submitForm}
+			className="flex h-full items-center px-4"
+		>
+			{children}
+		</button>
+	);
+};
+
+interface DefinitionCardProps {
+	data: DefinitionWithReaction;
+}
+
+const DefinitionCard = (props: DefinitionCardProps) => {
 	const user = useOptionalUser();
 	const { openModal } = useModalStore();
-	const fetcher = useFetcher();
+	const fetcher = useFetcher<DefinitionWithReaction>();
+	const invalidateDefinition = useInvalidateDefinition();
+	const data = fetcher.data?.id === props.data.id ? fetcher.data : props.data;
 
 	const likeSubaction: Schema['subaction'] =
 		data.currentUserReaction?.type === 'LIKE' ? 'delete' : 'upsert';
 
 	const dislikeSubaction: Schema['subaction'] =
 		data.currentUserReaction?.type === 'DISLIKE' ? 'delete' : 'upsert';
+
+	useEffect(() => {
+		if (invalidateDefinition.id === data.id) {
+			fetcher.load(`/definitions/${invalidateDefinition.id}`);
+			invalidateDefinition.setId(null);
+		}
+	}, [invalidateDefinition, data.id, fetcher]);
 
 	return (
 		<div className="rounded-lg border border-black bg-white">
@@ -267,19 +330,22 @@ const DefinitionCard = ({ data }: { data: DefinitionWithReaction }) => {
 							action="/?index"
 							subaction={likeSubaction}
 							fetcher={fetcher}
+							id={`like${data.id}`}
 						>
 							<input type="hidden" name="id" value={data.id} />
 							<input type="hidden" name="type" value={ReactionType.LIKE} />
-							<button type="submit" className="flex h-full items-center px-4">
-								{data.currentUserReaction?.type === 'LIKE' ? (
-									<AiFillLike className="mr-1 text-xl" />
-								) : (
-									<AiOutlineLike className="mr-1 text-xl" />
-								)}
-								<span className="text-sm">
-									{data.reaction?.likes?.toString() ?? 0}
-								</span>
-							</button>
+							<SubmitButton formId={`like${data.id}`}>
+								<>
+									{data.currentUserReaction?.type === 'LIKE' ? (
+										<AiFillLike className="mr-1 text-xl" />
+									) : (
+										<AiOutlineLike className="mr-1 text-xl" />
+									)}
+									<span className="text-sm">
+										{data.reaction?.likes?.toString() ?? 0}
+									</span>
+								</>
+							</SubmitButton>
 						</ValidatedForm>
 						<ValidatedForm
 							validator={validator}
@@ -288,19 +354,22 @@ const DefinitionCard = ({ data }: { data: DefinitionWithReaction }) => {
 							action="/?index"
 							subaction={dislikeSubaction}
 							fetcher={fetcher}
+							id={`dislike${data.id}`}
 						>
 							<input type="hidden" name="id" value={data.id} />
 							<input type="hidden" name="type" value={ReactionType.DISLIKE} />
-							<button className="flex h-full items-center px-4" type="submit">
-								{data.currentUserReaction?.type === 'DISLIKE' ? (
-									<AiFillDislike className="mr-1 text-xl" />
-								) : (
-									<AiOutlineDislike className="mr-1 text-xl" />
-								)}
-								<span className="text-sm">
-									{data.reaction?.dislikes?.toString() ?? 0}
-								</span>
-							</button>
+							<SubmitButton formId={`dislike${data.id}`}>
+								<>
+									{data.currentUserReaction?.type === 'DISLIKE' ? (
+										<AiFillDislike className="mr-1 text-xl" />
+									) : (
+										<AiOutlineDislike className="mr-1 text-xl" />
+									)}
+									<span className="text-sm">
+										{data.reaction?.dislikes?.toString() ?? 0}
+									</span>
+								</>
+							</SubmitButton>
 						</ValidatedForm>
 					</>
 				) : (
@@ -339,27 +408,11 @@ const DefinitionCard = ({ data }: { data: DefinitionWithReaction }) => {
 export default function Index() {
 	const loaderData = useLoaderData<LoaderData>();
 	const fetcher = useFetcher<LoaderData>();
-
 	const [data, setData] = useState(loaderData);
-	const [shouldFetch, setShouldFetch] = useState(true);
 
-	const loadMoreRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (!loadMoreRef.current) return;
-
-		const observer = new IntersectionObserver(entries => {
-			const entry = entries[0];
-			if (entry.isIntersecting && shouldFetch) {
-				fetcher.load(`/?index&cursor=${data.cursor}`);
-				setShouldFetch(false);
-			}
-		});
-
-		observer.observe(loadMoreRef.current);
-
-		return () => observer.disconnect();
-	}, [data.cursor, data.hasNextPage, fetcher, shouldFetch]);
+	const fetchMore = () => {
+		fetcher.load(`/?index&cursor=${loaderData.cursor}`);
+	};
 
 	useEffect(() => {
 		if (fetcher.data && data.hasNextPage) {
@@ -370,9 +423,8 @@ export default function Index() {
 			const cursor = fetcher.data.cursor ?? data.cursor;
 
 			setData(prev => ({ ...prev, definitions, hasNextPage, cursor }));
-			setShouldFetch(true);
 		}
-	}, [fetcher.data, data.definitions, data.cursor, data.hasNextPage]);
+	}, [fetcher.data, data.hasNextPage, data.cursor, data.definitions]);
 
 	return (
 		<>
@@ -384,13 +436,22 @@ export default function Index() {
 				) : (
 					<h1>Belum ada definisi</h1>
 				)}
+
 				{fetcher.state === 'loading' ? (
 					<p className="mb-3 text-center">Memuat data...</p>
 				) : null}
-				{data.hasNextPage && fetcher.state !== 'loading' ? (
-					<div ref={loadMoreRef}></div>
-				) : null}
 			</main>
+
+			{data.hasNextPage && fetcher.state !== 'loading' ? (
+				<div className="text-center">
+					<button
+						onClick={fetchMore}
+						className="mb-6 border border-black bg-white px-4 py-2"
+					>
+						Muat lebih banyak
+					</button>
+				</div>
+			) : null}
 		</>
 	);
 }
