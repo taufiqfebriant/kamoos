@@ -10,6 +10,8 @@ import * as Toast from '@radix-ui/react-toast';
 import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import { requireUser } from '~/auth.server';
+import { Field } from '~/components/field';
+import { AiOutlineClose } from 'react-icons/ai';
 
 const validator = withZod(
 	z.object({
@@ -81,35 +83,85 @@ export default function Create() {
 	// TODO: betulkan tampilan
 	return (
 		<>
-			<h1>Tambah kata baru</h1>
-			<ValidatedForm validator={validator} method="post" formRef={formRef}>
-				<div>
-					<label htmlFor="word">Kata</label>
-					<input type="text" name="word" id="word" />
+			<main className="rounded-lg border border-black bg-white">
+				<div className="border-b border-b-black py-3 px-8">
+					<h1 className="text-sm">Tambah definisi baru</h1>
 				</div>
-				{/* TODO: pastikan ini bisa pakek baris baru */}
-				<div className="mt-2">
-					<label htmlFor="definition">Definisi</label>
-					<textarea name="definition" id="definition" rows={5}></textarea>
-				</div>
-				{/* TODO: pastikan ini bisa pakek baris baru */}
-				<div className="mt-2">
-					<label htmlFor="example">Contoh</label>
-					<textarea name="example" id="example" rows={5}></textarea>
-				</div>
-				<button type="submit" className="bg-white px-6 py-3">
-					{isAdding ? 'Menambahkan...' : 'Tambah'}
-				</button>
-			</ValidatedForm>
+				<ValidatedForm
+					validator={validator}
+					method="post"
+					formRef={formRef}
+					className="py-3 px-8"
+				>
+					<Field name="word">
+						<Field.Label htmlFor="word" className="block">
+							Kata
+						</Field.Label>
+						<Field.Input
+							type="text"
+							id="word"
+							className="mt-1 w-full border border-black bg-gray-100 py-2 px-4"
+						/>
+						<Field.Error className="mt-1 block text-sm text-red-600" />
+					</Field>
+
+					{/* TODO: pastikan ini bisa pakek baris baru */}
+					<Field name="definition">
+						<Field.Label htmlFor="definition" className="mt-6 block">
+							Definisi
+						</Field.Label>
+						<Field.Description className="text-sm text-gray-700">
+							Ketik definisimu di bawah ini
+						</Field.Description>
+						<Field.Textarea
+							id="definition"
+							rows={5}
+							className="mt-2 w-full border border-black bg-gray-100 py-2 px-4"
+						/>
+						<Field.Error className="mt-1 block text-sm text-red-600" />
+					</Field>
+
+					{/* TODO: pastikan ini bisa pakek baris baru */}
+					<Field name="example">
+						<Field.Label htmlFor="example" className="mt-6 block">
+							Contoh
+						</Field.Label>
+						<Field.Description className="text-sm text-gray-700">
+							Ketikkan contoh penggunaannya dalam kalimat
+						</Field.Description>
+						<Field.Textarea
+							id="example"
+							rows={5}
+							className="mt-2 w-full border border-black bg-gray-100 py-2 px-4"
+						/>
+						<Field.Error className="mt-1 block text-sm text-red-600" />
+					</Field>
+
+					<div className="flex justify-end">
+						<button
+							type="submit"
+							className="mt-4 border border-black bg-yellow-400 px-6 py-3"
+						>
+							{isAdding ? 'Menambahkan...' : 'Tambah'}
+						</button>
+					</div>
+				</ValidatedForm>
+			</main>
 			{data?.status ? (
-				<Toast.Provider>
-					<Toast.Root open={true} className="bg-green-500">
-						<Toast.Title>Berhasil</Toast.Title>
-						<Toast.Description>{data.message}</Toast.Description>
-						<Toast.Close />
+				<Toast.Provider duration={4000}>
+					<Toast.Root className="border border-black bg-white px-6 py-4">
+						<div className="flex justify-between">
+							<Toast.Title>Berhasil</Toast.Title>
+							<Toast.Close>
+								<AiOutlineClose className="text-sm" />
+							</Toast.Close>
+						</div>
+						<Toast.Description className="mt-1 text-sm text-gray-700">
+							Definisi Anda akan segera ditinjau
+						</Toast.Description>
 					</Toast.Root>
 
-					<Toast.Viewport />
+					<Toast.Viewport className="fixed bottom-2 right-4" />
 				</Toast.Provider>
 			) : null}
 		</>

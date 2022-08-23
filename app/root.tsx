@@ -13,6 +13,7 @@ import { getUser } from '~/auth.server';
 import Nav from '~/components/nav';
 import { Dialog } from '@headlessui/react';
 import create from 'zustand';
+import { AiOutlineClose } from 'react-icons/ai';
 
 import tailwindStylesheetUrl from './styles/tailwind.css';
 import { SocialsProvider } from 'remix-auth-socials';
@@ -111,7 +112,7 @@ export default function App() {
 				<Links />
 			</head>
 			<body className="h-full bg-gray-200">
-				<div className="relative mx-auto max-w-2xl">
+				<div className="relative mx-auto max-w-2xl pb-4">
 					<Nav />
 					<Outlet />
 				</div>
@@ -122,7 +123,13 @@ export default function App() {
 				>
 					<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 					<div className="fixed inset-0 flex items-center justify-center p-4">
-						<Dialog.Panel className="border border-black bg-white px-8 py-4 text-center">
+						<Dialog.Panel className="relative border border-black bg-white px-8 py-4 text-center">
+							<button
+								className="absolute right-2 top-2"
+								onClick={useModalStore(state => state.closeModal)}
+							>
+								<AiOutlineClose />
+							</button>
 							<Dialog.Title className="font-bold">Ups</Dialog.Title>
 							<Dialog.Description className="mt-2">
 								Kamu harus masuk dulu

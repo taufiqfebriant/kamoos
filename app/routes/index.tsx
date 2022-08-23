@@ -21,7 +21,7 @@ import { requireUser, getSession, authenticator } from '~/auth.server';
 import { useOptionalUser } from '~/utils';
 import type { Optional } from '~/utils';
 import { customNanoId } from '~/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
 import superjson from 'superjson';
 import { useModalStore } from '~/root';
@@ -409,10 +409,25 @@ export default function Index() {
 	const loaderData = useLoaderData<LoaderData>();
 	const fetcher = useFetcher<LoaderData>();
 	const [data, setData] = useState(loaderData);
+	const [shouldFetch, setShouldFetch] = useState(true);
 
-	const fetchMore = () => {
-		fetcher.load(`/?index&cursor=${loaderData.cursor}`);
-	};
+	const loadMoreRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (!loadMoreRef.current) return;
+
+		const observer = new IntersectionObserver(entries => {
+			const entry = entries[0];
+			if (entry.isIntersecting && shouldFetch) {
+				fetcher.load(`/?index&cursor=${data.cursor}`);
+				setShouldFetch(false);
+			}
+		});
+
+		observer.observe(loadMoreRef.current);
+
+		return () => observer.disconnect();
+	}, [data.cursor, data.hasNextPage, fetcher, shouldFetch]);
 
 	useEffect(() => {
 		if (fetcher.data && data.hasNextPage) {
@@ -428,7 +443,7 @@ export default function Index() {
 
 	return (
 		<>
-			<main className="grid grid-cols-1 gap-6 pb-4">
+			<main className="grid grid-cols-1 gap-6">
 				{data.definitions.length ? (
 					data.definitions.map(definition => (
 						<DefinitionCard key={definition.id} data={definition} />
@@ -443,14 +458,7 @@ export default function Index() {
 			</main>
 
 			{data.hasNextPage && fetcher.state !== 'loading' ? (
-				<div className="text-center">
-					<button
-						onClick={fetchMore}
-						className="mb-6 border border-black bg-white px-4 py-2"
-					>
-						Muat lebih banyak
-					</button>
-				</div>
+				<div ref={loadMoreRef}></div>
 			) : null}
 		</>
 	);

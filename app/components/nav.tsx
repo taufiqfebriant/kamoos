@@ -12,9 +12,11 @@ export default function Nav() {
 
 	return (
 		<nav className="flex items-center justify-between gap-x-6 py-6">
-			<h4 className="flex-1 text-3xl font-bold">kamoos</h4>
+			<Link to="/" className="flex-1 text-3xl font-bold">
+				kamoos
+			</Link>
 			{user ? (
-				<Link to="/" className="hover:underline">
+				<Link to="/create" className="hover:underline">
 					Tambah definisi
 				</Link>
 			) : (
