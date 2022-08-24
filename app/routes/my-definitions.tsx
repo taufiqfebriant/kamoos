@@ -1,6 +1,6 @@
 import type { Reaction } from '@prisma/client';
 import { Prisma, ReactionType } from '@prisma/client';
-import type { ActionArgs, LoaderArgs } from '@remix-run/node';
+import type { LoaderArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import { withZod } from '@remix-validated-form/with-zod';
@@ -12,33 +12,27 @@ import {
 	AiOutlineDislike,
 	AiOutlineLike
 } from 'react-icons/ai';
-import {
-	useFormContext,
-	ValidatedForm,
-	validationError
-} from 'remix-validated-form';
+import { useFormContext, ValidatedForm } from 'remix-validated-form';
 import superjson from 'superjson';
 import { z } from 'zod';
-import { authenticator, getSession, requireUser } from '~/auth.server';
+import { requireUser } from '~/auth.server';
 import { prisma } from '~/db.server';
-import { useModalStore } from '~/root';
 import { useInvalidateDefinition } from '~/stores';
 import type { Optional } from '~/utils';
-import { customNanoId, useOptionalUser } from '~/utils';
 
-export type ReactionByDefinition = {
+type ReactionByDefinition = {
 	definition_id?: Reaction['definitionId'];
 	likes: number;
 	dislikes: number;
 };
 
-export type CurrentUserReaction = Optional<
+type CurrentUserReaction = Optional<
 	Pick<Reaction, 'id' | 'type' | 'definitionId'>,
 	'definitionId'
 >;
 
 // TODO: Ambil "Definition" field type dari Prisma.DefinitionGetPayload
-export type DefinitionWithReaction = {
+type DefinitionWithReaction = {
 	id: string;
 	word: string;
 	definition: string;
@@ -50,76 +44,14 @@ export type DefinitionWithReaction = {
 	currentUserReaction?: CurrentUserReaction;
 };
 
-const schema = z.object({
-	id: z.string().min(1, { message: 'ID wajib disertakan' }),
-	type: z.nativeEnum(ReactionType, {
-		required_error: 'Tipe wajib disertakan'
-	}),
-	subaction: z.enum(['upsert', 'delete'], {
-		required_error: 'Aksi wajib disertakan'
-	})
-});
-
-type Schema = z.infer<typeof schema>;
-
-const validator = withZod(schema);
-
-export const action = async ({ request }: ActionArgs) => {
-	const userId = await requireUser(request);
-
-	const { data, error } = await validator.validate(await request.formData());
-	if (error) {
-		return validationError(error);
-	}
-
-	const deletedAt =
-		data.subaction === 'delete' ? new Date().toISOString() : null;
-
-	try {
-		await prisma.reaction.upsert({
-			create: {
-				id: customNanoId(),
-				type: data.type,
-				definitionId: data.id,
-				userId
-			},
-			update: {
-				type: data.type,
-				deletedAt
-			},
-			where: {
-				definitionId_userId: {
-					definitionId: data.id,
-					userId
-				}
-			}
-		});
-	} catch (e) {
-		console.error('Failed to update/create definition reaction. Exception:', e);
-
-		return json(
-			{
-				message: 'Gagal menambahkan reaksi definisi'
-			},
-			{ status: 500 }
-		);
-	}
-
-	return json({
-		message: 'Berhasil menambahkan reaksi definisi'
-	});
-};
-
 type LoaderData = {
-	definitions: DefinitionWithReaction[];
+	definitions: DefinitionWithReaction[] | never[];
 	hasNextPage: boolean;
 	cursor: string | null;
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
-	const session = await getSession(request);
-	const userId = session.get(authenticator.sessionKey) as string | undefined;
-
+	const userId = await requireUser(request);
 	const limit = 10;
 	const cursor = new URL(request.url).searchParams.get('cursor');
 
@@ -144,20 +76,14 @@ export const loader = async ({ request }: LoaderArgs) => {
 		where: {
 			approvedAt: {
 				not: null
-			}
+			},
+			userId
 		},
 		take: limit + 1,
-		orderBy: [
-			{
-				approvedAt: 'desc'
-			},
-			{
-				id: 'asc'
-			}
-		]
+		orderBy: {
+			approvedAt: 'desc'
+		}
 	});
-
-	console.log('definitions:', definitions);
 
 	if (!definitions.length) {
 		const loaderData: LoaderData = {
@@ -242,6 +168,24 @@ export const loader = async ({ request }: LoaderArgs) => {
 	return json(superjson.serialize(loaderData).json);
 };
 
+interface DefinitionCardProps {
+	data: DefinitionWithReaction;
+}
+
+const schema = z.object({
+	id: z.string().min(1, { message: 'ID wajib disertakan' }),
+	type: z.nativeEnum(ReactionType, {
+		required_error: 'Tipe wajib disertakan'
+	}),
+	subaction: z.enum(['upsert', 'delete'], {
+		required_error: 'Aksi wajib disertakan'
+	})
+});
+
+type Schema = z.infer<typeof schema>;
+
+const validator = withZod(schema);
+
 interface SubmitButtonProps {
 	children: ReactElement;
 	formId: string;
@@ -281,13 +225,7 @@ const SubmitButton = ({ children, formId }: SubmitButtonProps) => {
 	);
 };
 
-interface DefinitionCardProps {
-	data: DefinitionWithReaction;
-}
-
 const DefinitionCard = (props: DefinitionCardProps) => {
-	const user = useOptionalUser();
-	const { openModal } = useModalStore();
 	const fetcher = useFetcher<DefinitionWithReaction>();
 	const invalidateDefinition = useInvalidateDefinition();
 	const data = fetcher.data?.id === props.data.id ? fetcher.data : props.data;
@@ -316,92 +254,61 @@ const DefinitionCard = (props: DefinitionCardProps) => {
 				<div className="flex-1 py-3">
 					<p className="ml-8 text-sm">diposting oleh {data.user.username}</p>
 				</div>
-				{user ? (
-					<>
-						{/* TODO: Ganti jadi method="delete". Liat di repo web Kent C. Dodds */}
-						<ValidatedForm
-							validator={validator}
-							method="post"
-							className="border-l border-black"
-							action="/?index"
-							subaction={likeSubaction}
-							fetcher={fetcher}
-							id={`like${data.id}`}
-						>
-							<input type="hidden" name="id" value={data.id} />
-							<input type="hidden" name="type" value={ReactionType.LIKE} />
-							<SubmitButton formId={`like${data.id}`}>
-								<>
-									{data.currentUserReaction?.type === 'LIKE' ? (
-										<AiFillLike className="mr-1 text-xl" />
-									) : (
-										<AiOutlineLike className="mr-1 text-xl" />
-									)}
-									<span className="text-sm">
-										{data.reaction?.likes?.toString() ?? 0}
-									</span>
-								</>
-							</SubmitButton>
-						</ValidatedForm>
-						<ValidatedForm
-							validator={validator}
-							method="post"
-							className="border-l border-black"
-							action="/?index"
-							subaction={dislikeSubaction}
-							fetcher={fetcher}
-							id={`dislike${data.id}`}
-						>
-							<input type="hidden" name="id" value={data.id} />
-							<input type="hidden" name="type" value={ReactionType.DISLIKE} />
-							<SubmitButton formId={`dislike${data.id}`}>
-								<>
-									{data.currentUserReaction?.type === 'DISLIKE' ? (
-										<AiFillDislike className="mr-1 text-xl" />
-									) : (
-										<AiOutlineDislike className="mr-1 text-xl" />
-									)}
-									<span className="text-sm">
-										{data.reaction?.dislikes?.toString() ?? 0}
-									</span>
-								</>
-							</SubmitButton>
-						</ValidatedForm>
-					</>
-				) : (
-					<>
-						<div className="border-l border-black">
-							<button
-								type="button"
-								className="flex h-full items-center px-4"
-								onClick={openModal}
-							>
+				{/* TODO: Ganti jadi method="delete". Liat di repo web Kent C. Dodds */}
+				<ValidatedForm
+					validator={validator}
+					method="post"
+					className="border-l border-black"
+					action="/?index"
+					subaction={likeSubaction}
+					fetcher={fetcher}
+					id={`like${data.id}`}
+				>
+					<input type="hidden" name="id" value={data.id} />
+					<input type="hidden" name="type" value={ReactionType.LIKE} />
+					<SubmitButton formId={`like${data.id}`}>
+						<>
+							{data.currentUserReaction?.type === 'LIKE' ? (
+								<AiFillLike className="mr-1 text-xl" />
+							) : (
 								<AiOutlineLike className="mr-1 text-xl" />
-								<span className="text-sm">
-									{data.reaction?.likes?.toString() ?? 0}
-								</span>
-							</button>
-						</div>
-						<div className="border-l border-black">
-							<button
-								type="button"
-								className="flex h-full items-center px-4"
-								onClick={openModal}
-							>
+							)}
+							<span className="text-sm">
+								{data.reaction?.likes?.toString() ?? 0}
+							</span>
+						</>
+					</SubmitButton>
+				</ValidatedForm>
+				<ValidatedForm
+					validator={validator}
+					method="post"
+					className="border-l border-black"
+					action="/?index"
+					subaction={dislikeSubaction}
+					fetcher={fetcher}
+					id={`dislike${data.id}`}
+				>
+					<input type="hidden" name="id" value={data.id} />
+					<input type="hidden" name="type" value={ReactionType.DISLIKE} />
+					<SubmitButton formId={`dislike${data.id}`}>
+						<>
+							{data.currentUserReaction?.type === 'DISLIKE' ? (
+								<AiFillDislike className="mr-1 text-xl" />
+							) : (
 								<AiOutlineDislike className="mr-1 text-xl" />
-								<span className="text-sm">
-									{data.reaction?.dislikes?.toString() ?? 0}
-								</span>
-							</button>
-						</div>
-					</>
-				)}
+							)}
+							<span className="text-sm">
+								{data.reaction?.dislikes?.toString() ?? 0}
+							</span>
+						</>
+					</SubmitButton>
+				</ValidatedForm>
 			</div>
 		</div>
 	);
 };
 
-export default function Index() {
+export default function MyDefinitions() {
 	const loaderData = useLoaderData<LoaderData>();
 	const fetcher = useFetcher<LoaderData>();
 	const [data, setData] = useState(loaderData);
@@ -427,18 +334,16 @@ export default function Index() {
 
 	useEffect(() => {
 		if (fetcher.data && data.hasNextPage) {
-			setData(prev => ({
-				definitions:
-					fetcher.data?.definitions && fetcher.data?.definitions.length > 0
-						? [...prev.definitions, ...fetcher.data?.definitions]
-						: prev.definitions,
-				hasNextPage: fetcher.data?.hasNextPage ?? prev.hasNextPage,
-				cursor: fetcher.data?.cursor ?? prev.cursor
-			}));
+			const definitions =
+				fetcher.data.definitions.length > 0
+					? [...data.definitions, ...fetcher.data.definitions]
+					: data.definitions;
+			const hasNextPage = fetcher.data.hasNextPage ?? data.hasNextPage;
+			const cursor = fetcher.data.cursor ?? data.cursor;
 
-			setShouldFetch(true);
+			setData({ definitions, hasNextPage, cursor });
 		}
-	}, [fetcher.data, data.hasNextPage]);
+	}, [fetcher.data, data.hasNextPage, data.cursor, data.definitions]);
 
 	return (
 		<>

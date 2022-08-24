@@ -1,10 +1,10 @@
-import { Form, Link } from '@remix-run/react';
-import { useOptionalUser } from '~/utils';
-import { VscSignIn } from 'react-icons/vsc';
-import { SocialsProvider } from 'remix-auth-socials';
 import { Popover } from '@headlessui/react';
-import { VscTriangleDown } from 'react-icons/vsc';
+import { Form, Link } from '@remix-run/react';
+import { FcGoogle } from 'react-icons/fc';
+import { VscSignIn, VscTriangleDown } from 'react-icons/vsc';
+import { SocialsProvider } from 'remix-auth-socials';
 import { useModalStore } from '~/root';
+import { useOptionalUser } from '~/utils';
 
 export default function Nav() {
 	const user = useOptionalUser();
@@ -35,9 +35,20 @@ export default function Nav() {
 							<VscTriangleDown />
 						</Popover.Button>
 						<Popover.Panel className="absolute right-0 mt-2 flex w-56 flex-col border border-black bg-white">
-							<Link className="px-6 py-3 hover:bg-gray-100" to="/profile">
+							<Popover.Button
+								as={Link}
+								className="px-6 py-3 hover:bg-gray-100"
+								to="/my-definitions"
+							>
+								Definisiku
+							</Popover.Button>
+							<Popover.Button
+								as={Link}
+								className="px-6 py-3 hover:bg-gray-100"
+								to="/profile"
+							>
 								Profil
-							</Link>
+							</Popover.Button>
 							<Form
 								method="post"
 								action="/logout"
@@ -50,15 +61,27 @@ export default function Nav() {
 						</Popover.Panel>
 					</Popover>
 				) : (
-					<Form method="post" action={`/auth/${SocialsProvider.GOOGLE}`}>
-						<button
-							className="flex items-center border-2 border-black bg-yellow-400 px-6 py-3"
-							type="submit"
-						>
+					<Popover>
+						<Popover.Button className="flex items-center border-2 border-black bg-yellow-400 px-6 py-3">
 							<VscSignIn className="mr-2 text-lg" />
 							<span>Masuk</span>
-						</button>
-					</Form>
+						</Popover.Button>
+						<Popover.Panel className="absolute right-0 mt-2 flex w-auto flex-col border border-black bg-white">
+							<Form
+								method="post"
+								action={`/auth/${SocialsProvider.GOOGLE}`}
+								className="hover:bg-gray-100"
+							>
+								<button
+									type="submit"
+									className="flex flex-row items-center gap-3 px-6 py-3"
+								>
+									<FcGoogle className="text-xl" />
+									<span className="w-fit">Masuk dengan Google</span>
+								</button>
+							</Form>
+						</Popover.Panel>
+					</Popover>
 				)}
 			</div>
 		</nav>

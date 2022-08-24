@@ -29,7 +29,7 @@ function isUser(user: any): user is User {
 	return user && typeof user === 'object' && typeof user.email === 'string';
 }
 
-export function useOptionalUser(): User | null {
+export function useOptionalUser(): Pick<User, 'username' | 'email'> | null {
 	const data = useMatchesData('root');
 	if (!data || !isUser(data.user)) {
 		return null;

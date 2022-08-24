@@ -1,3 +1,4 @@
+import { Dialog } from '@headlessui/react';
 import type { LinksFunction, LoaderArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import {
@@ -9,14 +10,13 @@ import {
 	Scripts,
 	ScrollRestoration
 } from '@remix-run/react';
+import { AiOutlineClose } from 'react-icons/ai';
+import create from 'zustand';
 import { getUser } from '~/auth.server';
 import Nav from '~/components/nav';
-import { Dialog } from '@headlessui/react';
-import create from 'zustand';
-import { AiOutlineClose } from 'react-icons/ai';
 
-import tailwindStylesheetUrl from './styles/tailwind.css';
 import { SocialsProvider } from 'remix-auth-socials';
+import tailwindStylesheetUrl from './styles/tailwind.css';
 
 interface ModalState {
 	isOpen: boolean;

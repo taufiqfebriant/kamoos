@@ -60,15 +60,17 @@ Field.Textarea = function Textarea(
 	);
 };
 
-Field.Input = function Input(props: Omit<HTMLProps<HTMLInputElement>, 'name'>) {
+Field.Input = function Input({
+	defaultValue,
+	...restProps
+}: Omit<HTMLProps<HTMLInputElement>, 'name'>) {
 	const fieldContext = useContext(FieldContext);
 
 	return (
 		<input
 			name={fieldContext?.name}
-			{...fieldContext?.getInputProps({
-				...props
-			})}
+			defaultValue={defaultValue}
+			{...fieldContext?.getInputProps({ ...restProps })}
 		/>
 	);
 };

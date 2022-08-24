@@ -1,17 +1,17 @@
-import type { ActionArgs, LoaderArgs } from '@remix-run/node';
-import { withZod } from '@remix-validated-form/with-zod';
-import { z } from 'zod';
-import { ValidatedForm, validationError } from 'remix-validated-form';
-import { prisma } from '~/db.server';
-import { customNanoId } from '~/utils';
-import { json } from '@remix-run/node';
-import { useActionData, useTransition } from '@remix-run/react';
 import * as Toast from '@radix-ui/react-toast';
-import { useEffect, useRef } from 'react';
+import type { ActionArgs, LoaderArgs } from '@remix-run/node';
+import { json } from '@remix-run/node';
+import { useFetcher } from '@remix-run/react';
+import { withZod } from '@remix-validated-form/with-zod';
 import type { RefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AiOutlineClose } from 'react-icons/ai';
+import { ValidatedForm, validationError } from 'remix-validated-form';
+import { z } from 'zod';
 import { requireUser } from '~/auth.server';
 import { Field } from '~/components/field';
-import { AiOutlineClose } from 'react-icons/ai';
+import { prisma } from '~/db.server';
+import { customNanoId } from '~/utils';
 
 const validator = withZod(
 	z.object({
@@ -49,9 +49,9 @@ export const action = async ({ request }: ActionArgs) => {
 			}
 		});
 	} catch (e) {
-		console.log('Failed to create definition, exception:', e);
+		console.error('Failed to create definition, exception:', e);
 
-		throw json<ActionData>(
+		return json<ActionData>(
 			{
 				status: false,
 				message: 'Gagal menambahkan definisi'
@@ -62,17 +62,23 @@ export const action = async ({ request }: ActionArgs) => {
 
 	return json<ActionData>({
 		status: true,
-		message: 'Definisi Anda akan segera ditinjau'
+		message: 'Definisimu akan segera ditinjau'
 	});
 };
 
+// TODO: handle expected error
 export default function Create() {
-	const data = useActionData<ActionData>();
-
-	const transition = useTransition();
-	const isAdding = transition.state === 'submitting';
+	const [responses, setResponses] = useState<ActionData[]>([]);
+	const fetcher = useFetcher();
+	const isAdding = fetcher.state === 'submitting';
 
 	const formRef = useRef() as RefObject<HTMLFormElement>;
+
+	useEffect(() => {
+		if (fetcher.data && fetcher.type === 'actionReload') {
+			setResponses(prev => [...prev, fetcher.data]);
+		}
+	}, [fetcher.data, fetcher.type]);
 
 	useEffect(() => {
 		if (!isAdding) {
@@ -92,6 +98,7 @@ export default function Create() {
 					method="post"
 					formRef={formRef}
 					className="py-3 px-8"
+					fetcher={fetcher}
 				>
 					<Field name="word">
 						<Field.Label htmlFor="word" className="block">
@@ -141,14 +148,15 @@ export default function Create() {
 						<button
 							type="submit"
 							className="mt-4 border border-black bg-yellow-400 px-6 py-3"
+							disabled={isAdding}
 						>
 							{isAdding ? 'Menambahkan...' : 'Tambah'}
 						</button>
 					</div>
 				</ValidatedForm>
 			</main>
-			{data?.status ? (
-				<Toast.Provider duration={4000}>
+			{responses.map((response, index) => (
+				<Toast.Provider duration={4000} key={index}>
 					<Toast.Root className="border border-black bg-white px-6 py-4">
 						<div className="flex justify-between">
 							<Toast.Title>Berhasil</Toast.Title>
@@ -157,13 +165,13 @@ export default function Create() {
 							</Toast.Close>
 						</div>
 						<Toast.Description className="mt-1 text-sm text-gray-700">
-							Definisi Anda akan segera ditinjau
+							{response.message}
 						</Toast.Description>
 					</Toast.Root>
 
 					<Toast.Viewport className="fixed bottom-2 right-4" />
 				</Toast.Provider>
-			) : null}
+			))}
 		</>
 	);
 }
