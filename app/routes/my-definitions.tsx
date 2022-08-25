@@ -45,7 +45,7 @@ type DefinitionWithReaction = {
 };
 
 type LoaderData = {
-	definitions: DefinitionWithReaction[] | never[];
+	definitions: DefinitionWithReaction[];
 	hasNextPage: boolean;
 	cursor: string | null;
 };
@@ -80,9 +80,14 @@ export const loader = async ({ request }: LoaderArgs) => {
 			userId
 		},
 		take: limit + 1,
-		orderBy: {
-			approvedAt: 'desc'
-		}
+		orderBy: [
+			{
+				approvedAt: 'desc'
+			},
+			{
+				id: 'asc'
+			}
+		]
 	});
 
 	if (!definitions.length) {
@@ -334,16 +339,16 @@ export default function MyDefinitions() {
 
 	useEffect(() => {
 		if (fetcher.data && data.hasNextPage) {
-			const definitions =
-				fetcher.data.definitions.length > 0
-					? [...data.definitions, ...fetcher.data.definitions]
-					: data.definitions;
-			const hasNextPage = fetcher.data.hasNextPage ?? data.hasNextPage;
-			const cursor = fetcher.data.cursor ?? data.cursor;
-
-			setData({ definitions, hasNextPage, cursor });
+			setData(prev => ({
+				definitions:
+					fetcher.data?.definitions && fetcher.data.definitions.length > 0
+						? [...prev.definitions, ...fetcher.data.definitions]
+						: prev.definitions,
+				hasNextPage: fetcher.data?.hasNextPage ?? prev.hasNextPage,
+				cursor: fetcher.data?.cursor ?? prev.cursor
+			}));
 		}
-	}, [fetcher.data, data.hasNextPage, data.cursor, data.definitions]);
+	}, [fetcher.data, data.hasNextPage]);
 
 	return (
 		<>

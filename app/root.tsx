@@ -112,14 +112,14 @@ export default function App() {
 				<Links />
 			</head>
 			<body className="h-full bg-gray-200">
-				<div className="relative mx-auto max-w-2xl pb-4">
+				<div className="relative mx-auto max-w-2xl px-4 pb-4 md:px-0">
 					<Nav />
 					<Outlet />
 				</div>
 				<Dialog
 					open={useModalStore(state => state.isOpen)}
 					onClose={useModalStore(state => state.closeModal)}
-					className="relative z-50"
+					className="relative z-[9999]"
 				>
 					<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 					<div className="fixed inset-0 flex items-center justify-center p-4">
