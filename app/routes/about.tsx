@@ -13,9 +13,9 @@ export default function About() {
 			</div>
 			<div className="py-3 px-8">
 				<p>
-					kamoos adalah kamus online untuk kata dan istilah yang viral, yang
-					kita temui di twitter, yang teman kita ucapkan, dan lain-lain. Pada
-					dasarnya,{' '}
+					{title} adalah kamus online untuk kata dan istilah yang viral, yang
+					kita temui di twitter atau youtube, yang teman kita ucapkan, dan
+					lain-lain. Pada dasarnya,{' '}
 					<a
 						href="https://www.urbandictionary.com"
 						className="text-blue text-cyan-600 hover:underline"

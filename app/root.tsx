@@ -118,6 +118,8 @@ export const meta: MetaFunction = () => ({
 	charset: 'utf-8',
 	title,
 	viewport: 'width=device-width,initial-scale=1',
+	description:
+		'Kamus online untuk kata dan istilah yang viral, yang kita temui di twitter atau youtube yang teman kita ucapkan, dan lain-lain. Pada dasarnya, Urban Dictionary versi Indonesia.',
 	'msapplication-config': '/browserconfig.xml',
 	'msapplication-TileColor': '#d1d5db',
 	'theme-color': '#d1d5db'
