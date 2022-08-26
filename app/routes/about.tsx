@@ -43,12 +43,12 @@ export default function About() {
 					</li>
 					<li>
 						<a
-							href="https://github.com/taufiqfebriant"
+							href="https://github.com/taufiqfebriant/kamoos"
 							className="text-blue text-cyan-600 hover:underline"
 							target="_blank"
 							rel="noreferrer"
 						>
-							GitHub
+							GitHub repository
 						</a>
 					</li>
 				</ul>
