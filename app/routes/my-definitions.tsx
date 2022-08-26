@@ -251,7 +251,7 @@ const DefinitionCard = (props: DefinitionCardProps) => {
 	return (
 		<div className="rounded-lg border border-black bg-white">
 			<div className="p-8">
-				<h1 className="text-4xl font-bold">{data.word}</h1>
+				<h1 className="text-2xl font-bold md:text-4xl">{data.word}</h1>
 				<div className="mt-4 whitespace-pre-wrap">{data.definition}</div>
 				<div className="mt-3 whitespace-pre-wrap italic">{data.example}</div>
 			</div>
