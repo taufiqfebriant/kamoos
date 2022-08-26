@@ -11,11 +11,11 @@ import {
 	ScrollRestoration
 } from '@remix-run/react';
 import { AiOutlineClose } from 'react-icons/ai';
+import { FcGoogle } from 'react-icons/fc';
+import { SocialsProvider } from 'remix-auth-socials';
 import create from 'zustand';
 import { getUser } from '~/auth.server';
 import Nav from '~/components/nav';
-
-import { SocialsProvider } from 'remix-auth-socials';
 import tailwindStylesheetUrl from './styles/tailwind.css';
 
 interface ModalState {
@@ -136,10 +136,11 @@ export default function App() {
 							</Dialog.Description>
 							<Form method="post" action={`/auth/${SocialsProvider.GOOGLE}`}>
 								<button
-									className="mt-4 border border-black bg-yellow-400 px-4 py-2"
+									className="mt-4 flex items-center gap-x-2 border border-black px-4 py-2"
 									type="submit"
 								>
-									Masuk
+									<FcGoogle className="text-2xl" />
+									Masuk dengan Google
 								</button>
 							</Form>
 						</Dialog.Panel>

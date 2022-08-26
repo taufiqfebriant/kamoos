@@ -6,6 +6,7 @@ import { BiMenuAltRight } from 'react-icons/bi';
 import { FcGoogle } from 'react-icons/fc';
 import {
 	VscDiffAdded,
+	VscHome,
 	VscInfo,
 	VscPerson,
 	VscSignIn,
@@ -18,7 +19,7 @@ import { useOptionalUser } from '~/utils';
 export default function Nav() {
 	const user = useOptionalUser();
 	const { openModal } = useModalStore();
-	const [isNavOpen, setIsNavOpen] = useState(true);
+	const [isNavOpen, setIsNavOpen] = useState(false);
 
 	return (
 		<>
@@ -27,6 +28,9 @@ export default function Nav() {
 					kamoos
 				</Link>
 				<div className="hidden gap-x-6 md:flex md:items-center">
+					<Link to="/" className="hover:underline">
+						Beranda
+					</Link>
 					{user ? (
 						<Link to="/create" className="hover:underline">
 							Tambah definisi
@@ -47,32 +51,37 @@ export default function Nav() {
 									<VscTriangleDown />
 								</Popover.Button>
 								<Popover.Panel className="absolute right-0 mt-2 flex w-56 flex-col border border-black bg-white">
-									<Popover.Button
-										as={Link}
-										className="px-6 py-3 hover:bg-gray-100"
-										to="/my-definitions"
-									>
-										Definisiku
-									</Popover.Button>
-									<Popover.Button
-										as={Link}
-										className="px-6 py-3 hover:bg-gray-100"
-										to="/profile"
-									>
-										Profil
-									</Popover.Button>
-									<Form
-										method="post"
-										action="/logout"
-										className="hover:bg-gray-100"
-									>
-										<button
-											type="submit"
-											className="w-full px-6 py-3 text-left"
-										>
-											Keluar
-										</button>
-									</Form>
+									{({ close }) => (
+										<>
+											<Popover.Button
+												as={Link}
+												className="px-6 py-3 hover:bg-gray-100"
+												to="/my-definitions"
+											>
+												Definisiku
+											</Popover.Button>
+											<Popover.Button
+												as={Link}
+												className="px-6 py-3 hover:bg-gray-100"
+												to="/profile"
+											>
+												Profil
+											</Popover.Button>
+											<Form
+												method="post"
+												action="/logout"
+												className="hover:bg-gray-100"
+												onSubmit={() => close()}
+											>
+												<button
+													type="submit"
+													className="w-full px-6 py-3 text-left"
+												>
+													Keluar
+												</button>
+											</Form>
+										</>
+									)}
 								</Popover.Panel>
 							</Popover>
 						) : (
@@ -89,7 +98,7 @@ export default function Nav() {
 									>
 										<button
 											type="submit"
-											className="flex flex-row items-center gap-3 px-6 py-3"
+											className="flex flex-row items-center gap-x-2 px-6 py-3"
 										>
 											<FcGoogle className="text-xl" />
 											<span className="w-fit">Masuk dengan Google</span>
@@ -121,7 +130,15 @@ export default function Nav() {
 								<AiOutlineClose className="text-lg" />
 							</button>
 						</div>
-						<div className="grid-cols-2 px-4 pt-8">
+						<div className="flex flex-col gap-y-4 px-4 pt-8">
+							<Link
+								to="/"
+								className="flex items-center gap-x-2"
+								onClick={() => setIsNavOpen(false)}
+							>
+								<VscHome className="text-2xl" />
+								<span>Beranda</span>
+							</Link>
 							{user ? (
 								<>
 									<Popover>
@@ -132,11 +149,12 @@ export default function Nav() {
 													<span className="text-left">{user.username}</span>
 													{open ? <AiFillCaretUp /> : <AiFillCaretDown />}
 												</Popover.Button>
-												<Popover.Panel className="grid grid-cols-[1.5rem_1fr] items-center gap-x-2">
+												<Popover.Panel className="mt-4 grid grid-cols-[1.5rem_1fr] items-center gap-x-2 gap-y-4">
 													<Popover.Button
 														as={Link}
 														to="/my-definitions"
 														className="col-start-2 col-end-2"
+														onClick={() => setIsNavOpen(false)}
 													>
 														Definisiku
 													</Popover.Button>
@@ -144,6 +162,7 @@ export default function Nav() {
 														as={Link}
 														to="/profile"
 														className="col-start-2"
+														onClick={() => setIsNavOpen(false)}
 													>
 														Profil
 													</Popover.Button>
@@ -151,6 +170,7 @@ export default function Nav() {
 														method="post"
 														action="/logout"
 														className="col-start-2"
+														onSubmit={() => setIsNavOpen(false)}
 													>
 														<button type="submit">Keluar</button>
 													</Form>
@@ -158,7 +178,11 @@ export default function Nav() {
 											</>
 										)}
 									</Popover>
-									<Link to="/create" className="flex items-center gap-x-2">
+									<Link
+										to="/create"
+										className="flex items-center gap-x-2"
+										onClick={() => setIsNavOpen(false)}
+									>
 										<VscDiffAdded className="text-2xl" />
 										<span>Tambah definisi</span>
 									</Link>
@@ -173,7 +197,7 @@ export default function Nav() {
 													<span className="flex-1 text-left">Masuk</span>
 													{open ? <AiFillCaretUp /> : <AiFillCaretDown />}
 												</Popover.Button>
-												<Popover.Panel className="mt-4 flex flex-col pt-2">
+												<Popover.Panel className="mt-4 flex flex-col">
 													<Form
 														method="post"
 														action={`/auth/${SocialsProvider.GOOGLE}`}
@@ -199,7 +223,11 @@ export default function Nav() {
 									</button>
 								</>
 							)}
-							<Link to="/about" className="flex items-center gap-x-2">
+							<Link
+								to="/about"
+								className="flex items-center gap-x-2"
+								onClick={() => setIsNavOpen(false)}
+							>
 								<VscInfo className="text-2xl" />
 								<span>Tentang</span>
 							</Link>
