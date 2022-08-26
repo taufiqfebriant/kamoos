@@ -1,7 +1,6 @@
-import type { ActionArgs, LoaderArgs } from '@remix-run/node';
+import type { ActionArgs, LoaderArgs, SerializeFrom } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useCatch, useFetcher, useLoaderData } from '@remix-run/react';
-import type { UseDataFunctionReturn } from '@remix-run/react/dist/components';
 import { withZod } from '@remix-validated-form/with-zod';
 import { useEffect, useState } from 'react';
 import {
@@ -159,7 +158,7 @@ const SubmitButton = ({ children, formId }: SubmitButtonProps) => {
 const DefinitionItem = ({
 	data
 }: {
-	data: UseDataFunctionReturn<typeof loader>['data'][number];
+	data: SerializeFrom<typeof loader>['data'][number];
 }) => {
 	const fetcher = useFetcher<DashboardDefinitionIdLoader>();
 	const formId = `approve${data.id}`;
