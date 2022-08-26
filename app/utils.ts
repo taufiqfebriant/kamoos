@@ -3,6 +3,8 @@ import { useMatches } from '@remix-run/react';
 import { customAlphabet } from 'nanoid';
 import { useMemo } from 'react';
 
+export const title = 'kamoos';
+
 export const customNanoId = customAlphabet(
 	'0123456789abcdefghijklmnopqrstuvwxyz',
 	20

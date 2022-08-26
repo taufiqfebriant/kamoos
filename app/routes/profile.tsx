@@ -1,5 +1,5 @@
 import * as Toast from '@radix-ui/react-toast';
-import type { ActionArgs, LoaderArgs } from '@remix-run/node';
+import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useTransition } from '@remix-run/react';
 import { withZod } from '@remix-validated-form/with-zod';
@@ -12,7 +12,11 @@ import { z } from 'zod';
 import { requireUser } from '~/auth.server';
 import { Field } from '~/components/field';
 import { prisma } from '~/db.server';
-import { useOptionalUser } from '~/utils';
+import { title, useOptionalUser } from '~/utils';
+
+export const meta: MetaFunction = () => ({
+	title: `Profil - ${title}`
+});
 
 export const loader = async ({ request }: LoaderArgs) => {
 	return await requireUser(request);

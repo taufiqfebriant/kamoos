@@ -1,3 +1,10 @@
+import type { MetaFunction } from '@remix-run/node';
+import { title } from '~/utils';
+
+export const meta: MetaFunction = () => ({
+	title: `Tentang - ${title}`
+});
+
 export default function About() {
 	return (
 		<main className="rounded-lg border border-black bg-white">
@@ -22,31 +29,29 @@ export default function About() {
 
 				<p className="mt-4">Dibuat oleh Taufiq</p>
 
-				<p className="mt-4">
-					Tautan:
-					<ul className="ml-4 list-disc">
-						<li>
-							<a
-								href="https://twitter.com/taufiqfebriant"
-								className="text-blue text-cyan-600 hover:underline"
-								target="_blank"
-								rel="noreferrer"
-							>
-								Twitter
-							</a>
-						</li>
-						<li>
-							<a
-								href="https://github.com/taufiqfebriant"
-								className="text-blue text-cyan-600 hover:underline"
-								target="_blank"
-								rel="noreferrer"
-							>
-								GitHub
-							</a>
-						</li>
-					</ul>
-				</p>
+				<p className="mt-4">Tautan:</p>
+				<ul className="ml-4 list-disc">
+					<li>
+						<a
+							href="https://twitter.com/taufiqfebriant"
+							className="text-blue text-cyan-600 hover:underline"
+							target="_blank"
+							rel="noreferrer"
+						>
+							Twitter
+						</a>
+					</li>
+					<li>
+						<a
+							href="https://github.com/taufiqfebriant"
+							className="text-blue text-cyan-600 hover:underline"
+							target="_blank"
+							rel="noreferrer"
+						>
+							GitHub
+						</a>
+					</li>
+				</ul>
 			</div>
 		</main>
 	);

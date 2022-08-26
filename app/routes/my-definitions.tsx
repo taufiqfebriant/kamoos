@@ -1,6 +1,6 @@
 import type { Reaction } from '@prisma/client';
 import { Prisma, ReactionType } from '@prisma/client';
-import type { LoaderArgs } from '@remix-run/node';
+import type { LoaderArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import { withZod } from '@remix-validated-form/with-zod';
@@ -19,6 +19,11 @@ import { requireUser } from '~/auth.server';
 import { prisma } from '~/db.server';
 import { useInvalidateDefinition } from '~/stores';
 import type { Optional } from '~/utils';
+import { title } from '~/utils';
+
+export const meta: MetaFunction = () => ({
+	title: `Definisiku - ${title}`
+});
 
 type ReactionByDefinition = {
 	definition_id?: Reaction['definitionId'];

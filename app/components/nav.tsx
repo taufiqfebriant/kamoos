@@ -13,6 +13,7 @@ import {
 	VscTriangleDown
 } from 'react-icons/vsc';
 import { SocialsProvider } from 'remix-auth-socials';
+import logo from '~/images/kamoos.svg';
 import { useModalStore } from '~/root';
 import { useOptionalUser } from '~/utils';
 
@@ -23,9 +24,9 @@ export default function Nav() {
 
 	return (
 		<>
-			<nav className="flex items-center justify-between py-6">
-				<Link to="/" className="text-3xl font-bold">
-					kamoos
+			<nav className="flex items-center justify-between py-7">
+				<Link to="/">
+					<img src={logo} alt="Logo" />
 				</Link>
 				<div className="hidden gap-x-6 md:flex md:items-center">
 					<Link to="/" className="hover:underline">
