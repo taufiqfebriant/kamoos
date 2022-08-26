@@ -90,7 +90,6 @@ export default function Create() {
 		}
 	}, [isAdding]);
 
-	// TODO: betulkan tampilan
 	return (
 		<>
 			<main className="rounded-lg border border-black bg-white">
@@ -116,7 +115,6 @@ export default function Create() {
 						<Field.Error className="mt-1 block text-sm text-red-600" />
 					</Field>
 
-					{/* TODO: pastikan ini bisa pakek baris baru */}
 					<Field name="definition">
 						<Field.Label htmlFor="definition" className="mt-6 block">
 							Definisi
@@ -132,7 +130,6 @@ export default function Create() {
 						<Field.Error className="mt-1 block text-sm text-red-600" />
 					</Field>
 
-					{/* TODO: pastikan ini bisa pakek baris baru */}
 					<Field name="example">
 						<Field.Label htmlFor="example" className="mt-6 block">
 							Contoh

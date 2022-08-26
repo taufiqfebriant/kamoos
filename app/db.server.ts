@@ -47,7 +47,6 @@ function getClient() {
 	// re-run per request like everything else is. So if you need to change
 	// something in this file, you'll need to manually restart the server.
 
-	// TODO: hapus log query
 	const client = new PrismaClient({
 		datasources: {
 			db: {
