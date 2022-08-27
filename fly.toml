@@ -7,7 +7,7 @@ processes = [ ]
 PORT = "8080"
 
 [deploy]
-release_command = "npx prisma migrate deploy && npx prisma db seed"
+release_command = "sh ./release.sh"
 
 [experimental]
 allowed_public_ports = [ ]
