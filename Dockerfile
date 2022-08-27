@@ -32,7 +32,6 @@ WORKDIR /myapp
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 
 COPY prisma ./prisma/
-COPY .env ./
 COPY tsconfig.json ./
 ADD package.json package-lock.json .npmrc ./
 RUN npx prisma generate && npx prisma db seed
