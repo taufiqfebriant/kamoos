@@ -31,11 +31,8 @@ WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 
-COPY app/utils.ts ./app/utils.ts
-COPY prisma ./prisma/
-COPY tsconfig.json ./
-ADD package.json package-lock.json .npmrc ./
-RUN npx prisma generate && npx prisma db seed
+ADD prisma .
+RUN npx prisma generate
 
 ADD . .
 RUN npm run build
