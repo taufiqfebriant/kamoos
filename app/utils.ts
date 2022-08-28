@@ -1,15 +1,8 @@
 import type { User } from '@prisma/client';
 import { useMatches } from '@remix-run/react';
-import { customAlphabet } from 'nanoid';
 import { useMemo } from 'react';
 
 export const title = 'kamoos';
-
-export const customNanoId = customAlphabet(
-	'0123456789abcdefghijklmnopqrstuvwxyz',
-	20
-);
-
 /**
  * This base hook is used in other hooks to quickly search for specific data
  * across all loader data using useMatches.

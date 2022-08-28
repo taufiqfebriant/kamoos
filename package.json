@@ -106,6 +106,6 @@
 		"node": ">=14"
 	},
 	"prisma": {
-		"seed": "ts-node --require tsconfig-paths/register --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+		"seed": "node prisma/seed.js"
 	}
 }

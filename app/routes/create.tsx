@@ -11,7 +11,8 @@ import { z } from 'zod';
 import { requireUser } from '~/auth.server';
 import { Field } from '~/components/field';
 import { prisma } from '~/db.server';
-import { customNanoId, title } from '~/utils';
+import { title } from '~/utils';
+import { customNanoId } from '~/utils-cjs';
 
 export const meta: MetaFunction = () => ({
 	title: `Tambah definisi baru - ${title}`

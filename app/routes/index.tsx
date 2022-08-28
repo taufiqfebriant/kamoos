@@ -24,7 +24,8 @@ import { prisma } from '~/db.server';
 import { useModalStore } from '~/root';
 import { useInvalidateDefinition } from '~/stores';
 import type { Optional } from '~/utils';
-import { customNanoId, useOptionalUser } from '~/utils';
+import { useOptionalUser } from '~/utils';
+import { customNanoId } from '~/utils-cjs';
 
 export type ReactionByDefinition = {
 	definition_id?: Reaction['definitionId'];

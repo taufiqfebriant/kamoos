@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import { generate } from 'canihazusername';
-import { customNanoId } from '~/utils';
+const { PrismaClient } = require('@prisma/client');
+const { generate } = require('canihazusername');
+const { customNanoId } = require('../app/utils-cjs');
 
 const prisma = new PrismaClient();
 

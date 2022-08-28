@@ -4,7 +4,7 @@ import { Authenticator } from 'remix-auth';
 import { GoogleStrategy, SocialsProvider } from 'remix-auth-socials';
 import invariant from 'tiny-invariant';
 import { prisma } from '~/db.server';
-import { customNanoId } from '~/utils';
+import { customNanoId } from '~/utils-cjs';
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set');
 invariant(process.env.GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_ID must be set');
