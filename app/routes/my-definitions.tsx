@@ -82,6 +82,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 			approvedAt: {
 				not: null
 			},
+			deletedAt: null,
 			userId
 		},
 		take: limit + 1,

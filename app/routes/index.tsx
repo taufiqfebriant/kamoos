@@ -145,7 +145,8 @@ export const loader = async ({ request }: LoaderArgs) => {
 		where: {
 			approvedAt: {
 				not: null
-			}
+			},
+			deletedAt: null
 		},
 		take: limit + 1,
 		orderBy: [
