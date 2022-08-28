@@ -120,8 +120,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 			r.definition_id in (${Prisma.join(definitionIds)})
 			AND r.deleted_at is null
 		group by
-			r.definition_id,
-			r."type"
+			r.definition_id
 	`;
 
 	let currentUserReactions: CurrentUserReaction[] = [];

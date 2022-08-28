@@ -1,5 +1,6 @@
 import type { ActionArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
+import superjson from 'superjson';
 import { authenticator, getSession } from '~/auth.server';
 import { prisma } from '~/db.server';
 import type {
@@ -7,7 +8,6 @@ import type {
 	DefinitionWithReaction,
 	ReactionByDefinition
 } from '~/routes/index';
-import superjson from 'superjson';
 
 export const loader = async ({ params, request }: ActionArgs) => {
 	const session = await getSession(request);
@@ -52,8 +52,7 @@ export const loader = async ({ params, request }: ActionArgs) => {
 			r.definition_id = ${id}
 			AND r.deleted_at is null
 		group by
-			r.definition_id,
-			r."type"
+			r.definition_id
 	`;
 
 	if (reactions.length > 0) {
