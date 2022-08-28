@@ -22,6 +22,15 @@ async function seed() {
 		update: {},
 		where: { name: 'ADMIN' }
 	});
+
+	await prisma.role.upsert({
+		create: {
+			id: customNanoId(),
+			name: 'MEMBER'
+		},
+		update: {},
+		where: { name: 'MEMBER' }
+	});
 }
 
 seed()
