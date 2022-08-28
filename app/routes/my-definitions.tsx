@@ -261,8 +261,10 @@ const DefinitionCard = (props: DefinitionCardProps) => {
 				<div className="mt-3 whitespace-pre-wrap italic">{data.example}</div>
 			</div>
 			<div className="flex border-t border-black">
-				<div className="flex-1 py-3">
-					<p className="ml-8 text-sm">diposting oleh {data.user.username}</p>
+				<div className="flex-1 overflow-x-auto whitespace-nowrap py-3">
+					<p className="ml-8 mr-4 inline-block text-sm">
+						oleh {data.user.username}
+					</p>
 				</div>
 				{/* TODO: Ganti jadi method="delete". Liat di repo web Kent C. Dodds */}
 				<ValidatedForm
