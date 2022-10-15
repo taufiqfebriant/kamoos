@@ -4,6 +4,7 @@ import type { LoaderArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import { withZod } from '@remix-validated-form/with-zod';
+import { nanoid } from 'nanoid';
 import type { ReactElement } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -248,7 +249,9 @@ const DefinitionCard = (props: DefinitionCardProps) => {
 
 	useEffect(() => {
 		if (invalidateDefinition.id === data.id) {
-			fetcher.load(`/definitions/${invalidateDefinition.id}`);
+			const uniqueId = nanoid();
+			fetcher.load(`/definitions/${invalidateDefinition.id}?q=${uniqueId}`);
+
 			invalidateDefinition.setId(null);
 		}
 	}, [invalidateDefinition, data.id, fetcher]);
