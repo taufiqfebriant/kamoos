@@ -81,7 +81,7 @@ export const loader = async ({ params, request }: ActionArgs) => {
 
 	return json(superjson.serialize(definitionWithReaction).json, {
 		headers: {
-			'Cache-Control': 'max-age=0, no-cache, must-revalidate, proxy-revalidate'
+			'Cache-Control': 'no-store'
 		}
 	});
 };
